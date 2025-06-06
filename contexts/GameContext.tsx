@@ -1,32 +1,40 @@
-import { Board, GameState, GameStatus, Player, Tile } from "@/types/GameTypes";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { Board, GameState, GameStatus, Players, Tile } from "@/types/GameTypes";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 // CREATING GAME STATE CONTEXT
 
 // Create length 9 array and create 9 new empty tiles
 const newBoard: Board = Array.from(Array(9), (_, i) => ({ choice: null, id: i })) as Board;
 
-const playerX: Player = {"team" : "X"};
-const playerY: Player = {"team" : "O"};
+const newPlayers: Players = {
+    "X": 0,
+    "O": 0
+}
 
 const newStatus: GameStatus = "InProgress";
 
-const newGameState: GameState = {"board": newBoard, "currentPlayer": playerX, "status": newStatus, "winner": null}
+const newGameState: GameState = {"board": newBoard, "currentPlayer": "X", "status": newStatus}
 
 interface GameContextProps {
     state: GameState,
     makeMove: (target: Tile) => void,
-    newGame: () => void
+    newGame: () => void,
+    players: Players,
+    resetScores: () => void
 }
 
-export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}});
+export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}, players: newPlayers, resetScores: () => {}});
 
 export const GameContextProvider = ({ children }: {children: ReactNode}) => {
     const [gameState, setGameState] = useState<GameState>(newGameState);
+    const [players, setPlayers] = useState<Players>(newPlayers);
+    const [lastStarter, setLastStarter] = useState<"X" | "O">("X");
 
     // Function to check someone has won
     const checkWin = () => {
         const testBoard: Board = gameState.board;
+
+        let foundWinner: "X" | "O" | null = null;
 
         // Your existing checkWin logic
         const winningCombinations = [
@@ -34,14 +42,61 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
             [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
             [0, 4, 8], [2, 4, 6]             // Diagonals
         ];
-        
-        winningCombinations.map((combination) => {
-            if (testBoard[combination[0]].choice == null) return;
+     
+        for (const combination of winningCombinations) {
+            const tileA = testBoard[combination[0]].choice;
+            const tileB = testBoard[combination[1]].choice;
+            const tileC = testBoard[combination[2]].choice;
 
-            if (testBoard[combination[0]].choice == testBoard[combination[1]].choice && testBoard[combination[0]].choice == testBoard[combination[2]].choice) {
-                console.log("Winner");
-            } 
-        })
+            if (tileA == null) continue;
+
+            if (tileA == tileB && tileA == tileC) {
+                foundWinner = tileA;
+                console.log(foundWinner)
+                
+                const newStatus: GameState = {
+                    "board": gameState.board,
+                    "currentPlayer": gameState.currentPlayer == "X" ? "O" : "X",
+                    "status": "Won"
+                }
+
+                const newPlayers: Players = {
+                    "X": foundWinner == "X" ? players.X + 1 : players.X,
+                    "O": foundWinner == "O" ? players.O + 1 : players.O
+                }
+
+                setPlayers(newPlayers);
+                setGameState(newStatus);
+
+                break;
+            }
+        }
+
+        if (foundWinner != null) {
+            return;
+        }
+        // If no winner found, check for draw
+        for (const tile of testBoard) {
+            if (tile.choice == null) break;
+
+            if (tile.id == 8) {
+                console.log("draw");
+
+                const newStatus: GameState = {
+                    "board": gameState.board,
+                    "currentPlayer": gameState.currentPlayer == "X" ? "O" : "X",
+                    "status": "Draw"
+                }
+
+                const newPlayers: Players = {
+                    "X": players.X + 0.5,
+                    "O": players.O + 0.5
+                }
+
+                setPlayers(newPlayers);
+                setGameState(newStatus);
+            }
+        }
     }
 
     // Call this every update
@@ -55,7 +110,7 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
 
         const newBoard = gameState.board.map((tile, i) => {
             if (i == target.id) {
-                return {choice: gameState.currentPlayer.team, id: i}
+                return {choice: gameState.currentPlayer, id: i}
             } else {
                 return tile;
             }
@@ -63,9 +118,8 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
 
         const newState: GameState = {
             "board": newBoard,
-            "currentPlayer": gameState.currentPlayer === playerX ? playerY : playerX,
+            "currentPlayer": gameState.currentPlayer === "X" ? "O" : "X",
             "status": gameState.status,
-            "winner": null
         }
         
         setGameState(newState);
@@ -73,12 +127,27 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
 
     // Function to create new game?
     const newGame = () => {
-        setGameState(newGameState);
+        if (lastStarter == "X") {
+            setLastStarter("O");
+        } else {
+            setLastStarter("X");
+        }
+
+        setGameState({
+            "board": newBoard,
+            "currentPlayer": lastStarter == "X" ? "O" : "X",
+            "status": "InProgress"
+        });
+    }
+
+    const resetScores = () => {
+        newGame();
+        setPlayers(newPlayers);
     }
 
 
     return (
-        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame}}>
+        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame, players: players, resetScores: resetScores}}>
             {children}
         </gameContext.Provider>
     )

@@ -2,17 +2,16 @@
 
 export interface GameState {
     board: Board;
-    currentPlayer: Player;
+    currentPlayer: "X" | "O";
     status: GameStatus;
-    winner: Player | null
 }
 
 export type GameStatus = "InProgress" | "Won" | "Draw";
 
-export interface Player {
-    team: "X" | "O";
-    wins?: number;
-} 
+export interface Players {
+    X: number,
+    O: number
+}
 
 // Tuple means it is immutable
 export type Board = [
