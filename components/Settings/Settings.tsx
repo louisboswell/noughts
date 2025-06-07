@@ -2,7 +2,6 @@ import { SettingsIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 
 export default function Settings () {
     return (
