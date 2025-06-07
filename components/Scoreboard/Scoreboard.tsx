@@ -15,7 +15,6 @@ export default function ScoreBoard ({player}: ScoreBoardProps) {
             <CardDescription>
                 {`Player ${player}`}
             </CardDescription>
-            {/* <Separator/> */}
             <CardTitle>
                 <a className="text-3xl">
                     {player == "X" ? players.X : players.O}

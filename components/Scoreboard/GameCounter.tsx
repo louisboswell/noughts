@@ -5,7 +5,7 @@ export default function GameCounter () {
     const {game} = useGameContext();
 
     return (
-            <Card className={`flex flex-col gap-2 text-center bg-background border-0`}>
+            <Card className={`flex flex-col gap-2 text-center border-2`}>
             <CardDescription>
                 Game
             </CardDescription>
