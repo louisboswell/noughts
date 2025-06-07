@@ -4,13 +4,20 @@ export interface GameState {
     board: Board;
     currentPlayer: "X" | "O";
     status: GameStatus;
+    winningCombination: number[] | null;
 }
 
 export type GameStatus = "InProgress" | "Won" | "Draw";
 
 export interface Players {
-    X: number,
-    O: number
+    X: {
+        wins: number,
+        name: string
+    },
+    O: {
+        wins: number,
+        name: string
+    }
 }
 
 // Tuple means it is immutable

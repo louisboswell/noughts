@@ -7,13 +7,19 @@ import { createContext, ReactNode, useContext, useState } from "react";
 const newBoard: Board = Array.from(Array(9), (_, i) => ({ choice: null, id: i })) as Board;
 
 const newPlayers: Players = {
-    "X": 0,
-    "O": 0
+    "X": {
+        "wins": 0,
+        "name": "Player X"
+    },
+    "O": {
+        "wins": 0,
+        "name": "Player O"
+    }
 }
 
 const newStatus: GameStatus = "InProgress";
 
-const newGameState: GameState = {"board": newBoard, "currentPlayer": "X", "status": newStatus}
+const newGameState: GameState = {"board": newBoard, "currentPlayer": "X", "status": newStatus, winningCombination: null}
 
 interface GameContextProps {
     state: GameState,
@@ -21,10 +27,11 @@ interface GameContextProps {
     newGame: () => void,
     players: Players,
     resetScores: () => void,
-    game: number
+    game: number,
+    updateNames: (playerX: string, playerO: string) => void
 }
 
-export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}, players: newPlayers, resetScores: () => {}, game: 1});
+export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}, players: newPlayers, resetScores: () => {}, game: 1, updateNames: () => {}});
 
 export const GameContextProvider = ({ children }: {children: ReactNode}) => {
     const [gameState, setGameState] = useState<GameState>(newGameState);
@@ -60,12 +67,19 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
                 const newStatus: GameState = {
                     "board": gameState.board,
                     "currentPlayer": gameState.currentPlayer == "X" ? "O" : "X",
-                    "status": "Won"
+                    "status": "Won",
+                    winningCombination: combination,
                 }
 
                 const newPlayers: Players = {
-                    "X": foundWinner == "X" ? players.X + 1 : players.X,
-                    "O": foundWinner == "O" ? players.O + 1 : players.O
+                    "X": {
+                        wins: foundWinner == "X" ? players.X.wins + 1 : players.X.wins,
+                        name: players.X.name
+                    },
+                    "O": {
+                        wins: foundWinner == "O" ? players.O.wins + 1 : players.O.wins,
+                        name: players.O.name
+                    },
                 }
 
                 setPlayers(newPlayers);
@@ -88,12 +102,19 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
                 const newStatus: GameState = {
                     "board": gameState.board,
                     "currentPlayer": gameState.currentPlayer == "X" ? "O" : "X",
-                    "status": "Draw"
+                    "status": "Draw",
+                    winningCombination: null
                 }
 
                 const newPlayers: Players = {
-                    "X": players.X + 0.5,
-                    "O": players.O + 0.5
+                    "X": {
+                        wins: players.X.wins + 0.5,
+                        name: players.X.name
+                    },
+                    "O": {
+                        wins: players.O.wins + 0.5,
+                        name: players.O.name
+                    },
                 }
 
                 setPlayers(newPlayers);
@@ -123,6 +144,7 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
             "board": newBoard,
             "currentPlayer": gameState.currentPlayer === "X" ? "O" : "X",
             "status": gameState.status,
+            "winningCombination": gameState.winningCombination
         }
         
         setGameState(newState);
@@ -141,7 +163,8 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
         setGameState({
             "board": newBoard,
             "currentPlayer": lastStarter == "X" ? "O" : "X",
-            "status": "InProgress"
+            "status": "InProgress",
+            "winningCombination": null
         });
     }
 
@@ -150,9 +173,36 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
         setPlayers(newPlayers);
     }
 
+    const updateNames = (playerX: string, playerO: string) => {
+        let playerXName: string = players.X.name;
+        let playerOName: string = players.O.name;
+
+        if (playerX.length > 0 && playerX != playerXName) {
+            playerXName = playerX;
+        }
+
+        if (playerO.length > 0 && playerO != playerOName) {
+            playerOName = playerO;
+        }
+
+
+        const newPlayers: Players = {
+            "X": {
+                "wins": players.X.wins,
+                "name": playerXName
+            },
+            "O": {
+                "wins": players.O.wins,
+                "name": playerOName
+            }
+        }
+
+        setPlayers(newPlayers);
+    }
+
 
     return (
-        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame, players: players, resetScores: resetScores, game: numGames}}>
+        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame, players: players, resetScores: resetScores, game: numGames, updateNames: updateNames}}>
             {children}
         </gameContext.Provider>
     )

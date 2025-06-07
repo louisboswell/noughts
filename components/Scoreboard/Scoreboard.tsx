@@ -13,11 +13,11 @@ export default function ScoreBoard ({player}: ScoreBoardProps) {
     return (
         <Card className={`flex flex-col gap-2 border-2 text-center ${currentPlayerGlow}`}>
             <CardDescription>
-                {`Player ${player}`}
+                {players[player].name}
             </CardDescription>
             <CardTitle>
                 <a className="text-3xl">
-                    {player == "X" ? players.X : players.O}
+                    {player == "X" ? players.X.wins : players.O.wins}
                 </a>
             </CardTitle>
         </Card>

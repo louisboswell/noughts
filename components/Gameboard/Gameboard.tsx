@@ -8,8 +8,13 @@ export default function Gameboard () {
 
     return (
         <Card className="grid grid-cols-3 grid-rows-3 p-0 gap-0">
-            {state.board.map((tile) => <Tile key={tile.id} tile={tile} />)}
-            
+            {state.board.map((tile) => (
+                <Tile
+                    key={tile.id}
+                    tile={tile}
+                    winning={!!state.winningCombination?.includes(tile.id)}
+                />
+            ))}
         </Card>
     )
 }

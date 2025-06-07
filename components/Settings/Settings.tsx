@@ -2,8 +2,11 @@ import { SettingsIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
+import {  useGameContext } from "@/contexts/GameContext";
 
 export default function Settings () {
+    const {players, updateNames} = useGameContext();
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -16,8 +19,8 @@ export default function Settings () {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator/>
 
-                <Input id="xname" placeholder="Player X Name"/>
-                <Input placeholder="Player O Name"/>
+                <Input id="xname" value={players.X.name} onChange={(event) => updateNames(event.target.value, players.O.name)}/>
+                <Input value={players.O.name} onChange={(event) => updateNames(players.X.name, event.target.value)}/>
 
             </DropdownMenuContent>
         </DropdownMenu>
