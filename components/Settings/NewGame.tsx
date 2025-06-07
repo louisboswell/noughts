@@ -5,7 +5,7 @@ export default function NewGame () {
     const {newGame } = useGameContext();
     
     return (
-        <Button onClick={() => newGame()}>
+        <Button variant="outline" onClick={() => newGame()}>
             New Game
         </Button>
     )

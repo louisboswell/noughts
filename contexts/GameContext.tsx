@@ -20,15 +20,18 @@ interface GameContextProps {
     makeMove: (target: Tile) => void,
     newGame: () => void,
     players: Players,
-    resetScores: () => void
+    resetScores: () => void,
+    game: number
 }
 
-export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}, players: newPlayers, resetScores: () => {}});
+export const gameContext = createContext<GameContextProps>({state: newGameState, makeMove: () => {}, newGame: () => {}, players: newPlayers, resetScores: () => {}, game: 1});
 
 export const GameContextProvider = ({ children }: {children: ReactNode}) => {
     const [gameState, setGameState] = useState<GameState>(newGameState);
     const [players, setPlayers] = useState<Players>(newPlayers);
     const [lastStarter, setLastStarter] = useState<"X" | "O">("X");
+
+    const [numGames, setNumGames] = useState<number>(1);
 
     // Function to check someone has won
     const checkWin = () => {
@@ -126,12 +129,14 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
     }
 
     // Function to create new game?
-    const newGame = () => {
+    const newGame = (reset?: boolean) => {
         if (lastStarter == "X") {
             setLastStarter("O");
         } else {
             setLastStarter("X");
         }
+
+        setNumGames(reset ? 1 : numGames + 1);
 
         setGameState({
             "board": newBoard,
@@ -141,13 +146,13 @@ export const GameContextProvider = ({ children }: {children: ReactNode}) => {
     }
 
     const resetScores = () => {
-        newGame();
+        newGame(true);
         setPlayers(newPlayers);
     }
 
 
     return (
-        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame, players: players, resetScores: resetScores}}>
+        <gameContext.Provider value={{state: gameState, makeMove: makeMove, newGame: newGame, players: players, resetScores: resetScores, game: numGames}}>
             {children}
         </gameContext.Provider>
     )

@@ -12,9 +12,17 @@ export default function Tile ({tile}: TileProps) {
 
     const disabled = state.status == "InProgress" ? false : true;
 
+    let rounding = "";
+    if (tile.id == 0) rounding = "rounded-tl-lg";
+    if (tile.id == 2) rounding = "rounded-tr-lg";
+    if (tile.id == 6) rounding = "rounded-bl-lg";
+    if (tile.id == 8) rounding = "rounded-br-lg";
+
     return (
-        <Button variant="ghost" disabled={disabled} onClick={() => makeMove(tile)} className="flex w-20 h-20 justify-center rounded-full items-center p-0">
-            {tile.choice == null ? null : tile.choice == "X" ? <XIcon size={40} strokeWidth={4}/> : <CircleIcon size={40} strokeWidth={4}/>}
+        <div className={`border-1 ${rounding}`}>
+        <Button variant="ghost" disabled={disabled} onClick={() => makeMove(tile)} className="flex w-30 h-30 justify-center items-center">
+            {tile.choice == null ? null : tile.choice == "X" ? <XIcon className="size-36" strokeWidth={3}/> : <CircleIcon className="size-26" strokeWidth={3}/>}
         </Button>
+        </div>
     )
 }
