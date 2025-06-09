@@ -3,6 +3,7 @@ import {NewGame} from '../lib/NewGames'
 
 import {createSlice} from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import checkWin from '@/lib/CheckWinner';
 
 export interface ReduxGameState {
     gameState: GameState,
@@ -22,30 +23,36 @@ export const gameSlice = createSlice({
     initialState,
     reducers: {
         makeMove: (state, action: PayloadAction<Tile>) => {
-            if (action.payload.choice != null) return;
+            // Find the tile in the draft state
+            const tile = state.gameState.board[action.payload.id];
 
-            const newBoard = state.gameState.board.map((tile, i) => {
-                if (i == action.payload.id) {
-                    return {choice: state.gameState.currentPlayer, id: i}
-                } else {
-                    return tile;
-                }
-            }) as Board;
+            // 1. Perform the move by directly mutating the draft
+            if (tile.choice !== null) {
+                return; // Invalid move, do nothing. Just exit.
+            }
+            tile.choice = state.gameState.currentPlayer;
 
-            const newGameState: ReduxGameState = {
-                "gameState": {
-                    "board": newBoard,
-                    "currentPlayer": state.gameState.currentPlayer === "X" ? "O" : "X",
-                    "status": state.gameState.status,
-                    "winningCombination": state.gameState.winningCombination
-                },
-                "players": state.players,
-                "gameNumber": state.gameNumber,
-                lastStarter: state.lastStarter
+            // 2. Check for a winner using the mutated draft board
+            const { combination, foundWinner } = checkWin(state.gameState.board);
+
+            // 3. Update status, wins, etc., by mutating the draft
+            if (foundWinner) {
+                // Winner
+                state.gameState.status = "Won";
+                state.gameState.winningCombination = combination;
+                state.players[foundWinner].wins += 1;
+            } else if (state.gameState.board.every((t) => t.choice !== null)) {
+                // Draw (I've included the corrected draw logic here)
+                state.gameState.status = "Draw";
+                state.players.X.wins += 0.5;
+                state.players.O.wins += 0.5;
             }
 
-            state = newGameState;
-            console.log(state)
+            // 4. Finally, switch the player
+            state.gameState.currentPlayer =
+                state.gameState.currentPlayer === "X" ? "O" : "X";
+
+            // NO return statement is needed at the end!
         },
         newGame: (state) => {
 
@@ -62,12 +69,11 @@ export const gameSlice = createSlice({
             }
 
             console.log(state)
-            state = newGameState;
+            return newGameState;
         },
-        resetScores: (state) => {
+        resetScores: () => {
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            state = NewGame();
+            return NewGame();
 
         },
         updateNames: (state, action: PayloadAction<{playerXName: string, playerOName: string}>) => {
@@ -92,7 +98,7 @@ export const gameSlice = createSlice({
                 "lastStarter": state.lastStarter
             }
 
-            state = newGameState;
+            return newGameState;
         }
     }
 });

@@ -2,10 +2,14 @@ import { SettingsIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
-import {  useGameContext } from "@/contexts/GameContext";
+// import {  useGameContext } from "@/contexts/GameContext";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { updateNames } from "@/redux/GameSlice";
 
 export default function Settings () {
-    const {players, updateNames} = useGameContext();
+    const players = useSelector((state: RootState) => state.game.players);
+    const dispatch = useDispatch();
 
     return (
         <DropdownMenu>
@@ -19,8 +23,8 @@ export default function Settings () {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator/>
 
-                <Input id="xname" value={players.X.name} onChange={(event) => updateNames(event.target.value, players.O.name)}/>
-                <Input value={players.O.name} onChange={(event) => updateNames(players.X.name, event.target.value)}/>
+                <Input id="xname" value={players.X.name} onChange={(event) => dispatch(updateNames({"playerXName": event.target.value, "playerOName": players.O.name}))}/>
+                <Input value={players.O.name} onChange={(event) => dispatch(updateNames({"playerXName": players.X.name, "playerOName": event.target.value}))}/>
 
             </DropdownMenuContent>
         </DropdownMenu>
